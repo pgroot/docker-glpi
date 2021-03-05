@@ -302,6 +302,15 @@ class PluginGenericobjectType extends CommonDBTM {
       ];
 
       $sopt[] = [
+         'id'            => 2,
+         'table'         => $this->getTable(),
+         'field'         => 'display_name',
+         'name'          => __('Display name'),
+         'datatype'      => 'itemlink',
+         'autocomplete'  => true,
+      ];
+
+      $sopt[] = [
          'id'            => 5,
          'table'         => $this->getTable(),
          'field'         => 'is_active',
@@ -485,8 +494,14 @@ class PluginGenericobjectType extends CommonDBTM {
       }
 
       echo "</td>";
-      echo "<td></td>";
-      echo "<td></td>";
+      echo "<td>". __("Display name", "genericobject") ."</td>";
+      echo "<td>";
+      if (!$ID) {
+         Html::autocompletionTextField($this, 'display_name', ['value' => $this->fields["display_name"]]);
+      } else {
+         echo "<input type='text' name='display_name' value='" . $this->fields["display_name"] . "'>";
+      }
+      echo "</td>";
       echo "</tr>";
 
       echo "<tr class='tab_bg_1'>";
@@ -2023,6 +2038,7 @@ class PluginGenericobjectType extends CommonDBTM {
                            `itemtype` varchar(255) collate utf8_unicode_ci default NULL,
                            `is_active` tinyint(1) NOT NULL default '0',
                            `name` varchar(255) collate utf8_unicode_ci default NULL,
+                           `display_name` varchar(255 ) collate utf8_unicode_ci default NULL,
                            `comment` text NULL,
                            `date_mod` TIMESTAMP NULL DEFAULT NULL,
                            `date_creation` TIMESTAMP NULL DEFAULT NULL,
