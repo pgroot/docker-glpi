@@ -576,6 +576,7 @@ class PluginGenericobjectType extends CommonDBTM {
             "use_plugin_simcard"            => __("simcard plugin", "genericobject"),
             "use_plugin_treeview"           => __("treeview plugin", "genericobject"),
             "use_plugin_fields"           => __("Fields plugin", "genericobject"),
+            "use_plugin_tag"           => __("Tag plugin", "genericobject"),
          ];
 
          $plugin = new Plugin();
@@ -612,6 +613,10 @@ class PluginGenericobjectType extends CommonDBTM {
                case 'use_plugin_fields':
                   Html::showCheckbox(['name'    => $right,
                                       'checked' => $this->canUseFieldsPlugin()]);
+                  break;
+               case 'use_plugin_tag':
+                  Html::showCheckbox(['name'    => $right, 'readonly' => true,
+                                      'checked' => $this->canUseTagPlugin()]);
                   break;
                default :
                   Html::showCheckbox(['name'    => $right,
@@ -716,6 +721,15 @@ class PluginGenericobjectType extends CommonDBTM {
                   } else {
                      echo Dropdown::EMPTY_VALUE;
                      echo "<input type='hidden' name='use_plugin_fields' value='0'>\n";
+                  }
+                  break;
+               case 'use_plugin_tag':
+                  if ($plugin->isActivated('tag')) {
+                     Html::showCheckbox(['name'    => $right, 'readonly' => true,
+                                         'checked' => $this->canUseTagPlugin()]);
+                  } else {
+                     echo Dropdown::EMPTY_VALUE;
+                     echo "<input type='hidden' name='use_plugin_tag' value='1'>\n";
                   }
                   break;
             }
@@ -1952,6 +1966,7 @@ class PluginGenericobjectType extends CommonDBTM {
       }
       return $this->fields['use_plugin_datainjection'];
    }
+   
 
 
    function canUsePluginOrder() {
@@ -2012,6 +2027,15 @@ class PluginGenericobjectType extends CommonDBTM {
          return false;
       }
       return $this->fields['use_plugin_fields'];
+   }
+
+   function canUseTagPlugin() {
+      $plugin = new Plugin();
+      if (!$plugin->isInstalled("tag")
+         || !$plugin->isActivated("tag")) {
+         return false;
+      }
+      return $this->fields['use_plugin_tag'];
    }
 
    function isTransferable() {
@@ -2083,6 +2107,7 @@ class PluginGenericobjectType extends CommonDBTM {
                            `use_menu_entry` tinyint(1) NOT NULL default '0',
                            `use_projects` tinyint(1) NOT NULL default '0',
                            `use_plugin_fields` tinyint(1) NOT NULL default '0',
+                           `use_plugin_tag` tinyint(1) NOT NULL default '0',
                            `linked_itemtypes` text NULL,
                            `plugin_genericobject_typefamilies_id` INT( 11 ) NOT NULL DEFAULT 0,
                            `use_itemdevices` tinyint(1) NOT NULL default '0',

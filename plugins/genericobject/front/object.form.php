@@ -30,6 +30,7 @@
 include ("../../../inc/includes.php");
 
 $itemtype = null;
+$plugin = new Plugin();
 
 if (isset($_REQUEST['itemtype'])) {
 
@@ -74,6 +75,17 @@ if (!is_null($itemtype)) {
    if (isset ($_POST["add"])) {
       $item->check($id, CREATE);
       $newID = $item->add($_POST);
+      
+      if ($plugin->isInstalled("tag") && $plugin->isActivated("tag") && isset($_POST['_plugin_tag_tag_process_form']) && (int)$_POST['_plugin_tag_tag_process_form'] === 1) {
+         //global $DB;
+         $query = "INSERT INTO `glpi_plugin_tag_tagitems` (`id`, `itemtype`, `items_id`, `plugin_tag_tags_id`) " ."VALUES ";
+         $v = [];
+         foreach($_POST['_plugin_tag_tag_values'] as $tag_id) {
+             $query .= "(NULL, '${itemtype}', ${newID}, ${tag_id}),";
+         }
+         $query = rtrim($query, ",");
+         $DB->query($query);
+      }
 
       if ($_SESSION['glpibackcreated']) {
          Html::redirect($itemtype::getFormURL()."&id=".$newID);
@@ -83,6 +95,19 @@ if (!is_null($itemtype)) {
    } else if (isset ($_POST["update"])) {
       $item->check($id, UPDATE);
       $item->update($_POST);
+
+      if ($plugin->isInstalled("tag") && $plugin->isActivated("tag") && isset($_POST['_plugin_tag_tag_process_form']) && (int)$_POST['_plugin_tag_tag_process_form'] === 1) {
+         //global $DB;
+         $DB->query("DELETE FROM `glpi_plugin_tag_tagitems` where `itemtype`='${itemtype}' AND `items_id`=${id}");
+         $query = "INSERT INTO `glpi_plugin_tag_tagitems` (`id`, `itemtype`, `items_id`, `plugin_tag_tags_id`) " ."VALUES ";
+         $v = [];
+         foreach($_POST['_plugin_tag_tag_values'] as $tag_id) {
+             $query .= "(NULL, '${itemtype}', ${id}, ${tag_id}),";
+         }
+         $query = rtrim($query, ",");
+         $DB->query($query);
+      }
+
       Html::back();
    } else if (isset ($_POST["restore"])) {
       $item->check($id, DELETE);
