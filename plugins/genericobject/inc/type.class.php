@@ -575,6 +575,7 @@ class PluginGenericobjectType extends CommonDBTM {
             "use_plugin_uninstall"          => __("item's uninstallation plugin", "genericobject"),
             "use_plugin_simcard"            => __("simcard plugin", "genericobject"),
             "use_plugin_treeview"           => __("treeview plugin", "genericobject"),
+            "use_plugin_fields"           => __("Fields plugin", "genericobject"),
          ];
 
          $plugin = new Plugin();
@@ -608,6 +609,10 @@ class PluginGenericobjectType extends CommonDBTM {
                                       'checked' => $this->canUseTemplate()]);
                   break;
 
+               case 'use_plugin_fields':
+                  Html::showCheckbox(['name'    => $right,
+                                      'checked' => $this->canUseFieldsPlugin()]);
+                  break;
                default :
                   Html::showCheckbox(['name'    => $right,
                                       'checked' => $this->fields[$right]]);
@@ -702,6 +707,15 @@ class PluginGenericobjectType extends CommonDBTM {
                   } else {
                      echo Dropdown::EMPTY_VALUE;
                      echo "<input type='hidden' name='use_plugin_geninventorynumber' value='0'>\n";
+                  }
+                  break;
+               case 'use_plugin_fields':
+                  if ($plugin->isActivated('fields')) {
+                     Html::showCheckbox(['name'    => $right,
+                                         'checked' => $this->fields[$right]]);
+                  } else {
+                     echo Dropdown::EMPTY_VALUE;
+                     echo "<input type='hidden' name='use_plugin_fields' value='0'>\n";
                   }
                   break;
             }
@@ -1991,6 +2005,14 @@ class PluginGenericobjectType extends CommonDBTM {
       return $this->fields['use_plugin_geninventorynumber'];
    }
 
+   function canUseFieldsPlugin() {
+      $plugin = new Plugin();
+      if (!$plugin->isInstalled("fields")
+         || !$plugin->isActivated("fields")) {
+         return false;
+      }
+      return $this->fields['use_plugin_fields'];
+   }
 
    function isTransferable() {
       return Session::isMultiEntitiesMode();
@@ -2060,6 +2082,7 @@ class PluginGenericobjectType extends CommonDBTM {
                            `use_plugin_geninventorynumber` tinyint(1) NOT NULL default '0',
                            `use_menu_entry` tinyint(1) NOT NULL default '0',
                            `use_projects` tinyint(1) NOT NULL default '0',
+                           `use_plugin_fields` tinyint(1) NOT NULL default '0',
                            `linked_itemtypes` text NULL,
                            `plugin_genericobject_typefamilies_id` INT( 11 ) NOT NULL DEFAULT 0,
                            `use_itemdevices` tinyint(1) NOT NULL default '0',

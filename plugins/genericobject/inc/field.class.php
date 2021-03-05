@@ -118,8 +118,8 @@ class PluginGenericobjectField extends CommonDBTM {
          echo "</table>";
       }
 
-      $dropdownFields = self::dropdownFields("new_field", $itemtype, $used_fields);
-
+      $dropdownFields = self::dropdownFields("new_field", $itemtype, $used_fields, $object_type->fields['use_plugin_fields']);
+   
       if ($dropdownFields) {
          echo "<br>";
          echo "<table class='tab_cadre genericobject_fields add_new'>";
@@ -222,7 +222,7 @@ class PluginGenericobjectField extends CommonDBTM {
     *
     * @return the dropdown random ID
     */
-   static function dropdownFields($name, $itemtype, $used = []) {
+   static function dropdownFields($name, $itemtype, $used = [], $use_plugin_fields = 0) {
       global $GO_FIELDS;
 
       $dropdown_types = [];
@@ -264,11 +264,23 @@ class PluginGenericobjectField extends CommonDBTM {
          }
       }
 
+      if((int)$use_plugin_fields ===  1) {
+         $plugin = new Plugin();
+         if ($plugin->isInstalled("fields") && $plugin->isActivated("fields")) {
+            global $DB;
+
+            $result = $DB->query('select f.name,f.label from `glpi_plugin_fields_fields` as f left join `glpi_plugin_fields_containers` as c on f.plugin_fields_containers_id = c.id where c.itemtypes like "%PluginGenericobjectTypeFamily%"');
+            foreach($result as $k => $v) {
+               $dropdown_types[$v['name']] = $v['label'];
+            }
+         }
+      }
+
       // Don't show dropdown empty
       if (empty($dropdown_types)) {
          return '';
       }
-
+      
       ksort($dropdown_types);
       return Dropdown::showFromArray($name, $dropdown_types, ['display' => false]);
    }
@@ -284,12 +296,13 @@ class PluginGenericobjectField extends CommonDBTM {
     * @return an array which contains the full field definition
     */
    static function getFieldOptions($field, $itemtype = "") {
-      global $GO_FIELDS;
+      global $GO_FIELDS, $DB;
 
       $options = [];
       $cleaned_field = preg_replace("/^plugin_genericobject_/", '', $field);
       if (!isset($GO_FIELDS[$cleaned_field]) && !empty($itemtype)) {
          // This field has been dynamically defined because it's an isolated dropdown
+         
          $tmpfield = self::getFieldName(
             $field, $itemtype,
             [
@@ -298,7 +311,24 @@ class PluginGenericobjectField extends CommonDBTM {
             ],
             true
          );
-         $options             = $GO_FIELDS[$tmpfield];
+         
+
+         $options             = $GO_FIELDS[$tmpfield] ?? null;
+
+         $plugin = new Plugin();
+         if(empty($options) && $plugin->isInstalled("fields") && $plugin->isActivated("fields")) {
+            $result = $DB->query('select * from `glpi_plugin_fields_fields` where `name` = "'.$field.'"');
+            $_field = [];
+            foreach($result as $k => $v) {
+               $_field = $v;
+               break;
+            }
+            $options = [
+               'input_type' => $_field['type'],
+               'name' => $_field['label']
+            ];
+         }
+         
          $options['realname'] = $tmpfield;
       } else if (isset($GO_FIELDS[$cleaned_field])) {
          $options             = $GO_FIELDS[$cleaned_field];
@@ -454,6 +484,7 @@ class PluginGenericobjectField extends CommonDBTM {
       $pref      = new DisplayPreference();
       $itemtype  = getItemTypeForTable($table);
       $searchopt = Search::getCleanedOptions($itemtype);
+
       foreach ($searchopt as $num => $option) {
          if ((isset($option['field'])  && ($option['field'] == $field))
             || (isset($option['field']) && $option['linkfield'] == $field)) {
@@ -510,7 +541,7 @@ class PluginGenericobjectField extends CommonDBTM {
    public static function checkNecessaryFieldsDelete($itemtype, $field) {
       $type = new PluginGenericobjectType();
       $type->getFromDBByType($itemtype);
-
+     
       if ($type->canUseNetworkPorts() && 'locations_id' == $field) {
          return false;
       }

@@ -27,13 +27,16 @@
 
 include ("../../../inc/includes.php");
 if (isset ($_POST["delete"])) {
-   if (isset($_POST["fields"]) && count($_POST["fields"] > 0 )) {
+   
+   if (isset($_POST["fields"]) && count($_POST["fields"]) > 0 ) {
       $type = new PluginGenericobjectType();
       $type->getFromDB($_POST["id"]);
       $itemtype = $type->fields['itemtype'];
+      
       PluginGenericobjectType::registerOneType($itemtype);
 
       foreach ($_POST["fields"] as $field => $value) {
+         
          if ($type->can($_POST["id"], PURGE)
             && $value == 1
                && PluginGenericobjectField::checkNecessaryFieldsDelete($itemtype, $field)) {
@@ -42,6 +45,7 @@ if (isset ($_POST["delete"])) {
          }
       }
    }
+
 } else if (isset ($_POST["add_field"])) {
    $type     = new PluginGenericobjectType();
    if ($_POST["new_field"] && $type->can($_POST["id"], UPDATE)) {
