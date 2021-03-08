@@ -1460,6 +1460,16 @@ JAVASCRIPT;
          echo Html::script('public/lib/scrollable-tabs.js');
       }
 
+      //append
+      $custom_styles = getenv("CUSTOM_STYLES") ?? "";
+      if($custom_styles) {
+          $_styles = explode(",", $custom_styles);
+          foreach($_styles as $_style) {
+              echo "<link rel='stylesheet' type='text/css' href='${_style}' media='all'>";
+          }
+      }
+      //end
+
       // End of Head
       echo "</head>\n";
       self::glpi_flush();
