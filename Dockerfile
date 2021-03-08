@@ -33,6 +33,10 @@ RUN echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/docker-php-memory.in
 COPY ./sources /usr/src/glpi
 COPY ./plugins /usr/src/glpi/plugins
 
+# Override
+RUN cp -f ./override/sources/inc/includes.php /usr/src/glpi/inc/includes.php
+RUN cp -f ./override/sources/inc/html.class.php /usr/src/glpi/inc/html.class.php
+
 # Build GLPI app
 RUN /usr/src/glpi/tools/build_glpi.sh
 
