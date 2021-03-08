@@ -1213,10 +1213,14 @@ class Html {
       // Send extra expires header
       self::header_nocache();
 
+      //append
+      $title_prefix = getenv("TITLE_PREFIX") ?? "";
+      //end
+
       // Start the page
       echo "<!DOCTYPE html>\n";
       echo "<html lang=\"{$CFG_GLPI["languages"][$_SESSION['glpilanguage']][3]}\">";
-      echo "<head><title>GLPI - ".$title."</title>";
+      echo "<head><title>${title_prefix}".$title."</title>";
       echo "<meta charset=\"utf-8\">";
 
       //prevent IE to turn into compatible mode...
