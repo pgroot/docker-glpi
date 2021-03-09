@@ -36,7 +36,7 @@ COPY ./plugins /usr/src/glpi/plugins
 # Override
 COPY ./override/sources/inc/includes.php /usr/src/glpi/inc/includes.php
 COPY ./override/sources/inc/html.class.php /usr/src/glpi/inc/html.class.php
-COPY ./override/index.php /usr/src/glpi/index.php
+COPY ./override/sources/index.php /usr/src/glpi/index.php
 
 # Build GLPI app
 RUN /usr/src/glpi/tools/build_glpi.sh
